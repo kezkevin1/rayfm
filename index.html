@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ray FM</title>
+<meta name="description" content="Ray FM: Our music, our voices.">
+<meta name="theme-color" content="#2b0f45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ray FM">
+<style>
+:root{--plum:#2b0f45;--plum2:#471a6b;--coral:#ff4f5e;--gold:#ffc233;--teal:#19c5b3;--ivory:#fff3e0;--mute:#c9a8de}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{color:var(--ivory);font-family:"Trebuchet MS","Segoe UI",Roboto,sans-serif;
+background:
+ radial-gradient(70vmax 40vmax at 50% 108%,rgba(255,79,94,.55),transparent 70%),
+ radial-gradient(50vmax 30vmax at 50% 100%,rgba(255,194,51,.35),transparent 70%),
+ linear-gradient(180deg,var(--plum) 0%,var(--plum2) 100%);
+display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+padding:calc(22px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
+overflow-x:hidden}
+header{text-align:center}
+h1{margin:0;font-family:"Arial Rounded MT Bold","Trebuchet MS",sans-serif;font-size:3rem;font-weight:900;letter-spacing:-.02em;
+ color:var(--ivory);text-shadow:3px 3px 0 var(--coral)}
+.tag{margin:.5rem 0 0;color:var(--mute);font-size:1rem}
+
+/* Tuning dial */
+.dial{width:100%;max-width:400px;background:#1a0a2b;border:2px solid #5b2d82;border-radius:18px;padding:14px 14px 10px;
+ box-shadow:inset 0 2px 12px #000a,0 10px 30px #0006}
+.scale{position:relative;height:74px;background:linear-gradient(#2a1342,#1a0a2b);border-radius:10px;overflow:hidden}
+.ticks{position:absolute;inset:0}
+.needle{position:absolute;top:0;bottom:0;left:12%;width:3px;margin-left:-1.5px;background:var(--coral);
+ box-shadow:0 0 12px var(--coral);transition:left 1.4s cubic-bezier(.3,1.4,.5,1)}
+.live .needle{left:50%}
+.dial-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:.85rem;color:var(--mute)}
+.led{display:flex;align-items:center;gap:8px}
+.led i{width:10px;height:10px;border-radius:50%;background:#4a3560}
+.live .led i{background:var(--teal);box-shadow:0 0 10px var(--teal)}
+.eq{display:flex;gap:3px;align-items:flex-end;height:18px}
+.eq b{width:4px;height:4px;background:var(--gold);border-radius:2px}
+.live .eq b{animation:eq 1s ease-in-out infinite}
+.live .eq b:nth-child(2){animation-delay:-.7s}.live .eq b:nth-child(3){animation-delay:-.4s}
+.live .eq b:nth-child(4){animation-delay:-.9s}.live .eq b:nth-child(5){animation-delay:-.2s}
+@keyframes eq{0%,100%{height:4px}50%{height:18px}}
+
+/* Play button as speaker grille */
+#play{position:relative;width:min(58vw,230px);aspect-ratio:1;border-radius:50%;border:0;cursor:pointer;padding:0;
+ background:
+  radial-gradient(circle,rgba(43,15,69,.55) 1.6px,transparent 2.2px) 0 0/13px 13px,
+  radial-gradient(circle at 35% 30%,#ffd766,var(--gold) 55%,#e89a10);
+ box-shadow:0 0 0 8px rgba(255,194,51,.16),0 0 0 18px rgba(255,194,51,.07),0 14px 30px #0007;
+ transition:transform .15s}
+#play:active{transform:scale(.96)}
+#play:focus-visible{outline:4px solid #fff;outline-offset:8px}
+#play .core{position:absolute;inset:30%;border-radius:50%;background:var(--plum);display:grid;place-items:center;
+ box-shadow:0 0 0 4px var(--coral)}
+#play svg{width:50%;height:50%;fill:var(--ivory)}
+.live #play{animation:beat 1.6s ease-in-out infinite}
+@keyframes beat{50%{box-shadow:0 0 0 12px rgba(255,194,51,.22),0 0 0 28px rgba(255,194,51,.07),0 14px 30px #0007}}
+
+/* Now playing */
+.np{width:100%;max-width:400px;background:rgba(26,10,43,.6);border:1px solid #5b2d82;border-radius:14px;padding:14px 16px;text-align:left}
+.np small{color:var(--mute);font-size:.8rem}
+.np b{display:block;margin-top:2px;font-size:1.2rem;line-height:1.3;overflow-wrap:anywhere}
+.np span{color:var(--gold)}
+.vol{width:100%;max-width:400px;display:flex;gap:12px;align-items:center;color:var(--mute);font-size:.9rem}
+input[type=range]{flex:1;accent-color:var(--gold)}
+main{display:flex;flex-direction:column;align-items:center;gap:22px;width:100%}
+footer{text-align:center;min-height:2.6rem;font-size:.85rem;color:var(--mute)}
+.status{min-height:1.2rem;font-size:.9rem;color:var(--mute);text-align:center}
+button.ghost{background:none;border:1px solid var(--mute);color:var(--ivory);border-radius:999px;padding:10px 18px;font:inherit;cursor:pointer}
+.hide{display:none}
+@media(max-height:700px){h1{font-size:2.4rem}#play{width:min(46vw,180px)}main{gap:14px}}
+@media(prefers-reduced-motion:reduce){.live #play,.live .eq b{animation:none}.needle{transition:none}.live .eq b{height:12px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Ray FM</h1>
+  <p class="tag">Our music, our voices.</p>
+</header>
+
+<main>
+  <div class="dial" aria-hidden="true">
+    <div class="scale"><svg class="ticks" id="ticks" preserveAspectRatio="none" viewBox="0 0 100 74"></svg><div class="needle"></div></div>
+    <div class="dial-foot"><span class="led"><i></i><span id="led">Off air</span></span><span class="eq"><b></b><b></b><b></b><b></b><b></b></span></div>
+  </div>
+
+  <button id="play" aria-label="Play Ray FM"><span class="core"><svg viewBox="0 0 24 24" id="ico"><path d="M8 5v14l11-7z"/></svg></span></button>
+
+  <div class="np" aria-live="polite"><small id="label">Ready when you are</small><b id="title">Tap the speaker to listen</b><span id="artist"></span></div>
+
+  <div class="vol"><span>Volume</span><input id="vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume"></div>
+  <div class="status" id="status"></div>
+</main>
+
+<footer>
+  <button class="ghost hide" id="install">Install Ray FM on this phone</button>
+  <span id="ios" class="hide">On iPhone: tap Share, then Add to Home Screen.</span>
+</footer>
+
+<script>
+// ---- Edit these two lines if your address ever changes ----
+const BASE = "https://prince.tail2e7667.ts.net";
+const STATION = "ray_fm";
+// -----------------------------------------------------------
+const STREAM = BASE + "/listen/" + STATION + "/radio.mp3";
+const API = BASE + "/api/nowplaying/" + STATION;
+const $ = id => document.getElementById(id);
+const PLAY = '<path d="M8 5v14l11-7z"/>';
+const PAUSE_ICON = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+let audio = null, timer = null;
+
+// draw dial ticks
+(function(){let h="";for(let i=0;i<=40;i++){const x=i*2.5,big=i%5===0;
+ h+=`<line x1="${x}" x2="${x}" y1="${big?38:50}" y2="74" stroke="${big?'#ffc233':'#8a62ad'}" stroke-width="${big?.7:.4}" vector-effect="non-scaling-stroke"/>`;}
+ $("ticks").innerHTML=h;})();
+
+function setIcon(on){ $("ico").innerHTML = on ? PAUSE_ICON : PLAY;
+  $("play").setAttribute("aria-label", on ? "Pause Ray FM" : "Play Ray FM");
+  document.body.classList.toggle("live", on);
+  $("led").textContent = on ? "On air" : "Off air";
+  $("label").textContent = on ? "Now playing" : "Ready when you are";
+  if(!on){ $("title").textContent = "Tap the speaker to listen"; $("artist").textContent = ""; } }
+
+async function refresh(){
+  try{
+    const r = await fetch(API, {cache:"no-store"}); const d = await r.json();
+    const s = d.now_playing && d.now_playing.song;
+    if(s && audio){ $("title").textContent = s.title || "Ray FM"; $("artist").textContent = s.artist || "";
+      if("mediaSession" in navigator) navigator.mediaSession.metadata =
+        new MediaMetadata({title:s.title||"Ray FM", artist:s.artist||"Ray FM", album:"Ray FM"}); }
+  }catch(e){}
+}
+
+function start(){
+  audio = new Audio(STREAM + "?t=" + Date.now()); audio.volume = $("vol").value;
+  $("status").textContent = "Tuning in…";
+  audio.addEventListener("playing", () => { $("status").textContent = ""; setIcon(true); });
+  audio.addEventListener("waiting", () => $("status").textContent = "Buffering…");
+  audio.addEventListener("error", () => { stop(); $("status").textContent = "Can't reach Ray FM. Check your connection and tap the speaker again."; });
+  audio.play().catch(() => { stop(); $("status").textContent = "Tap the speaker again to start."; });
+  refresh(); timer = setInterval(refresh, 15000);
+}
+function stop(){ if(audio){ audio.pause(); audio.src = ""; audio = null; } clearInterval(timer);
+  $("status").textContent = ""; setIcon(false); }
+
+$("play").onclick = () => audio ? stop() : start();
+$("vol").oninput = e => { if(audio) audio.volume = e.target.value; };
+if("mediaSession" in navigator){
+  navigator.mediaSession.setActionHandler("play", () => { if(!audio) start(); });
+  navigator.mediaSession.setActionHandler("pause", stop);
+}
+
+let deferred;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; $("install").classList.remove("hide"); });
+$("install").onclick = async () => { if(!deferred) return; deferred.prompt(); await deferred.userChoice; deferred = null; $("install").classList.add("hide"); };
+const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent), standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+if(isiOS && !standalone) $("ios").classList.remove("hide");
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
