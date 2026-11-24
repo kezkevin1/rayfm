@@ -1,13 +1,13 @@
 {
   "name": "Ray FM",
   "short_name": "Ray FM",
-  "description": "Ray FM: Our music, our voices.",
+  "description": "Ray FM: Tune In. Feel Good.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#2b0f45",
-  "theme_color": "#2b0f45",
+  "background_color": "#06205e",
+  "theme_color": "#06205e",
   "icons": [
     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},

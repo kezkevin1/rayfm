@@ -4,158 +4,284 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ray FM</title>
-<meta name="description" content="Ray FM: Our music, our voices.">
-<meta name="theme-color" content="#2b0f45">
+<meta name="description" content="Ray FM: Tune In. Feel Good.">
+<meta name="theme-color" content="#06205e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Ray FM">
 <style>
-:root{--plum:#2b0f45;--plum2:#471a6b;--coral:#ff4f5e;--gold:#ffc233;--teal:#19c5b3;--ivory:#fff3e0;--mute:#c9a8de}
+:root{--plum:#06205e;--plum2:#0a3bb8;--coral:#2f9bff;--gold:#9fd8ff;--teal:#19e0c8;--ivory:#ffffff;--mute:#b5cdf5;--line:#2f5fc4}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{color:var(--ivory);font-family:"Trebuchet MS","Segoe UI",Roboto,sans-serif;
-background:
- radial-gradient(70vmax 40vmax at 50% 108%,rgba(255,79,94,.55),transparent 70%),
- radial-gradient(50vmax 30vmax at 50% 100%,rgba(255,194,51,.35),transparent 70%),
- linear-gradient(180deg,var(--plum) 0%,var(--plum2) 100%);
-display:flex;flex-direction:column;align-items:center;justify-content:space-between;
-padding:calc(22px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
-overflow-x:hidden}
-header{text-align:center}
-h1{margin:0;font-family:"Arial Rounded MT Bold","Trebuchet MS",sans-serif;font-size:3rem;font-weight:900;letter-spacing:-.02em;
- color:var(--ivory);text-shadow:3px 3px 0 var(--coral)}
-.tag{margin:.5rem 0 0;color:var(--mute);font-size:1rem}
+background:radial-gradient(70vmax 40vmax at 50% 108%,rgba(47,155,255,.5),transparent 70%),
+radial-gradient(50vmax 30vmax at 50% 100%,rgba(159,216,255,.3),transparent 70%),linear-gradient(180deg,var(--plum),var(--plum2)) fixed}
+.app{height:100vh;height:100dvh;max-width:480px;margin:0 auto;display:flex;flex-direction:column}
+header{display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top)) 18px 6px}
+h1{margin:0;font-family:"Arial Rounded MT Bold","Trebuchet MS",sans-serif;font-size:1.8rem;font-weight:900;letter-spacing:-.02em;text-shadow:2px 2px 0 var(--coral);line-height:1}
+.tag{margin:4px 0 0;color:var(--mute);font-size:.85rem}
+.pill{background:rgba(4,22,74,.7);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.8rem;color:var(--gold);min-height:30px;display:flex;align-items:center}
+.pill:empty{display:none}
+.views{flex:1;overflow-y:auto;padding:8px 16px 16px}
+.view{display:none;flex-direction:column;align-items:center;gap:16px}.view.on{display:flex}
+nav{display:flex;background:#04164a;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;color:var(--mute);padding:10px 0 8px;font:inherit;font-size:.78rem;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+nav button[aria-selected=true]{color:var(--gold)}
+nav svg{width:24px;height:24px;fill:currentColor}
+.card{width:100%;background:rgba(4,22,74,.6);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.card h2{margin:0 0 6px;font-size:1rem;color:var(--gold)}
+.card p{margin:0;color:var(--mute);font-size:.92rem;line-height:1.5}
 
-/* Tuning dial */
-.dial{width:100%;max-width:400px;background:#1a0a2b;border:2px solid #5b2d82;border-radius:18px;padding:14px 14px 10px;
- box-shadow:inset 0 2px 12px #000a,0 10px 30px #0006}
-.scale{position:relative;height:74px;background:linear-gradient(#2a1342,#1a0a2b);border-radius:10px;overflow:hidden}
-.ticks{position:absolute;inset:0}
-.needle{position:absolute;top:0;bottom:0;left:12%;width:3px;margin-left:-1.5px;background:var(--coral);
- box-shadow:0 0 12px var(--coral);transition:left 1.4s cubic-bezier(.3,1.4,.5,1)}
+.dial{width:100%;background:#04164a;border:2px solid var(--line);border-radius:16px;padding:12px 12px 8px;box-shadow:inset 0 2px 12px #000a,0 10px 26px #0006}
+.scale{position:relative;height:56px;background:linear-gradient(#0a2a80,#04164a);border-radius:9px;overflow:hidden}
+.ticks{position:absolute;inset:0;width:100%;height:100%}
+.needle{position:absolute;top:0;bottom:0;left:12%;width:3px;margin-left:-1.5px;background:var(--coral);box-shadow:0 0 12px var(--coral);transition:left 1.4s cubic-bezier(.3,1.4,.5,1)}
 .live .needle{left:50%}
-.dial-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:.85rem;color:var(--mute)}
+.dial-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:.85rem;color:var(--mute)}
 .led{display:flex;align-items:center;gap:8px}
-.led i{width:10px;height:10px;border-radius:50%;background:#4a3560}
+.led i{width:10px;height:10px;border-radius:50%;background:#3a5aa0}
 .live .led i{background:var(--teal);box-shadow:0 0 10px var(--teal)}
-.eq{display:flex;gap:3px;align-items:flex-end;height:18px}
+.eq{display:flex;gap:3px;align-items:flex-end;height:16px}
 .eq b{width:4px;height:4px;background:var(--gold);border-radius:2px}
 .live .eq b{animation:eq 1s ease-in-out infinite}
-.live .eq b:nth-child(2){animation-delay:-.7s}.live .eq b:nth-child(3){animation-delay:-.4s}
-.live .eq b:nth-child(4){animation-delay:-.9s}.live .eq b:nth-child(5){animation-delay:-.2s}
-@keyframes eq{0%,100%{height:4px}50%{height:18px}}
+.live .eq b:nth-child(2){animation-delay:-.7s}.live .eq b:nth-child(3){animation-delay:-.4s}.live .eq b:nth-child(4){animation-delay:-.9s}.live .eq b:nth-child(5){animation-delay:-.2s}
+@keyframes eq{0%,100%{height:4px}50%{height:16px}}
 
-/* Play button as speaker grille */
-#play{position:relative;width:min(58vw,230px);aspect-ratio:1;border-radius:50%;border:0;cursor:pointer;padding:0;
- background:
-  radial-gradient(circle,rgba(43,15,69,.55) 1.6px,transparent 2.2px) 0 0/13px 13px,
-  radial-gradient(circle at 35% 30%,#ffd766,var(--gold) 55%,#e89a10);
- box-shadow:0 0 0 8px rgba(255,194,51,.16),0 0 0 18px rgba(255,194,51,.07),0 14px 30px #0007;
- transition:transform .15s}
+#play{position:relative;width:min(46vw,190px);aspect-ratio:1;border-radius:50%;border:0;cursor:pointer;padding:0;margin:6px 0;
+background:radial-gradient(circle,rgba(6,32,94,.55) 1.6px,transparent 2.2px) 0 0/13px 13px,radial-gradient(circle at 35% 30%,#ffffff,#cfe9ff 55%,#5aa9f5);
+box-shadow:0 0 0 8px rgba(159,216,255,.16),0 0 0 18px rgba(159,216,255,.07),0 14px 30px #0007;transition:transform .15s}
 #play:active{transform:scale(.96)}
-#play:focus-visible{outline:4px solid #fff;outline-offset:8px}
-#play .core{position:absolute;inset:30%;border-radius:50%;background:var(--plum);display:grid;place-items:center;
- box-shadow:0 0 0 4px var(--coral)}
+#play:focus-visible,button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:4px}
+#play .core{position:absolute;inset:30%;border-radius:50%;background:var(--plum);display:grid;place-items:center;box-shadow:0 0 0 4px var(--coral)}
 #play svg{width:50%;height:50%;fill:var(--ivory)}
 .live #play{animation:beat 1.6s ease-in-out infinite}
-@keyframes beat{50%{box-shadow:0 0 0 12px rgba(255,194,51,.22),0 0 0 28px rgba(255,194,51,.07),0 14px 30px #0007}}
+@keyframes beat{50%{box-shadow:0 0 0 12px rgba(159,216,255,.22),0 0 0 28px rgba(159,216,255,.07),0 14px 30px #0007}}
 
-/* Now playing */
-.np{width:100%;max-width:400px;background:rgba(26,10,43,.6);border:1px solid #5b2d82;border-radius:14px;padding:14px 16px;text-align:left}
-.np small{color:var(--mute);font-size:.8rem}
-.np b{display:block;margin-top:2px;font-size:1.2rem;line-height:1.3;overflow-wrap:anywhere}
-.np span{color:var(--gold)}
-.vol{width:100%;max-width:400px;display:flex;gap:12px;align-items:center;color:var(--mute);font-size:.9rem}
+.np{display:flex;gap:12px;align-items:center;text-align:left}
+.art{width:56px;height:56px;border-radius:10px;object-fit:cover;background:linear-gradient(135deg,var(--coral),var(--gold));flex:none}
+.np small{color:var(--mute);font-size:.78rem}
+.np b{display:block;font-size:1.1rem;line-height:1.25;overflow-wrap:anywhere}
+.np span{color:var(--gold);font-size:.95rem}
+.vol{width:100%;display:flex;gap:12px;align-items:center;color:var(--mute);font-size:.9rem}
 input[type=range]{flex:1;accent-color:var(--gold)}
-main{display:flex;flex-direction:column;align-items:center;gap:22px;width:100%}
-footer{text-align:center;min-height:2.6rem;font-size:.85rem;color:var(--mute)}
-.status{min-height:1.2rem;font-size:.9rem;color:var(--mute);text-align:center}
-button.ghost{background:none;border:1px solid var(--mute);color:var(--ivory);border-radius:999px;padding:10px 18px;font:inherit;cursor:pointer}
-.hide{display:none}
-@media(max-height:700px){h1{font-size:2.4rem}#play{width:min(46vw,180px)}main{gap:14px}}
-@media(prefers-reduced-motion:reduce){.live #play,.live .eq b{animation:none}.needle{transition:none}.live .eq b{height:12px}}
+.status{min-height:1.1rem;font-size:.88rem;color:var(--mute);text-align:center}
+.hint{font-size:.8rem;color:var(--mute);text-align:center}
+
+.row{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #1c3f96}
+.row:last-child{border:0}
+.row .art{width:44px;height:44px}
+.row b{display:block;font-size:.98rem;overflow-wrap:anywhere}
+.row span{color:var(--mute);font-size:.85rem}
+.row time{margin-left:auto;color:var(--mute);font-size:.78rem;white-space:nowrap}
+.act{width:100%;display:block;text-align:center;text-decoration:none;border:0;border-radius:12px;padding:14px;font:inherit;font-weight:700;font-size:1rem;cursor:pointer;color:var(--plum);background:var(--gold)}
+.act.alt{background:#1f6fe0;color:#fff}
+.act.line{background:none;border:1px solid var(--mute);color:var(--ivory);font-weight:400}
+select{width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px solid var(--line);background:#04164a;color:var(--ivory);font:inherit}
+.socials{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.socials a{color:var(--ivory);border:1px solid var(--mute);border-radius:999px;padding:8px 14px;text-decoration:none;font-size:.9rem}
+.brand{display:flex;gap:10px;align-items:center}.mark{width:44px;height:44px;border-radius:12px;box-shadow:0 2px 10px #0006}
+.hero{width:100%;height:auto;border-radius:14px;border:1px solid var(--line);box-shadow:0 8px 24px #0006}
+.logo{display:block;width:100%;height:auto;background:#fff;border-radius:10px;padding:8px;margin-bottom:12px}
+.hide{display:none!important}
+@media(max-height:680px){.hero{display:none}h1{font-size:1.7rem}#play{width:min(36vw,140px)}.view{gap:10px}}
+@media(prefers-reduced-motion:reduce){.live #play,.live .eq b{animation:none}.live .eq b{height:12px}.needle{transition:none}}
 </style>
 </head>
 <body>
+<div class="app">
 <header>
-  <h1>Ray FM</h1>
-  <p class="tag">Our music, our voices.</p>
+  <div class="brand"><img class="mark" src="icon-192.png" alt="" width="44" height="44"><div><h1>Ray FM</h1><p class="tag" id="tag"></p></div></div>
+  <div class="pill" id="lis"></div>
 </header>
 
-<main>
-  <div class="dial" aria-hidden="true">
-    <div class="scale"><svg class="ticks" id="ticks" preserveAspectRatio="none" viewBox="0 0 100 74"></svg><div class="needle"></div></div>
-    <div class="dial-foot"><span class="led"><i></i><span id="led">Off air</span></span><span class="eq"><b></b><b></b><b></b><b></b><b></b></span></div>
-  </div>
+<div class="views">
+  <section class="view on" id="v-listen">
+    <img class="hero" src="banner.jpg" alt="Ray FM: Tune In. Feel Good. Listen Live" width="1400" height="521">
+    <div class="dial" aria-hidden="true">
+      <div class="scale"><svg class="ticks" id="ticks" preserveAspectRatio="none" viewBox="0 0 100 56"></svg><div class="needle"></div></div>
+      <div class="dial-foot"><span class="led"><i></i><span id="led">Ready</span></span><span class="eq"><b></b><b></b><b></b><b></b><b></b></span></div>
+    </div>
+    <button id="play" aria-label="Play Ray FM"><span class="core"><svg viewBox="0 0 24 24" id="ico"><path d="M8 5v14l11-7z"/></svg></span></button>
+    <div class="card np" aria-live="polite">
+      <img class="art" id="art" src="default-art.jpg" alt="" width="56" height="56">
+      <div><small id="label">On air now</small><b id="title">Loading…</b><span id="artist"></span></div>
+    </div>
+    <div class="vol"><span>Volume</span><input id="vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume"></div>
+    <div class="status" id="status" role="status"></div>
+    <div class="hint" id="data"></div>
+  </section>
 
-  <button id="play" aria-label="Play Ray FM"><span class="core"><svg viewBox="0 0 24 24" id="ico"><path d="M8 5v14l11-7z"/></svg></span></button>
+  <section class="view" id="v-recent">
+    <div class="card"><h2>Recently played</h2><div id="hist"><p>Songs will appear here as they play.</p></div></div>
+  </section>
 
-  <div class="np" aria-live="polite"><small id="label">Ready when you are</small><b id="title">Tap the speaker to listen</b><span id="artist"></span></div>
+  <section class="view" id="v-more">
+    <button class="act" id="share">Share Ray FM with friends</button>
+    <a class="act alt hide" id="req" target="_blank" rel="noopener">Request a song</a>
+    <a class="act line hide" id="artist-cta" target="_blank" rel="noopener">I'm an artist: play my music</a>
+    <div class="card"><h2>Sleep timer</h2>
+      <select id="sleep" aria-label="Sleep timer"><option value="0">Off</option><option value="15">Stop in 15 minutes</option><option value="30">Stop in 30 minutes</option><option value="60">Stop in 1 hour</option><option value="120">Stop in 2 hours</option></select>
+      <p id="sleepnote" style="margin-top:8px"></p></div>
+    <label class="card" style="display:flex;gap:12px;align-items:center;cursor:pointer"><input type="checkbox" id="wel" checked style="width:20px;height:20px;accent-color:var(--gold)"><span>Play the Ray FM welcome sound when I start listening</span></label>
+    <div class="card hide" id="socialcard"><h2>Follow us</h2><div class="socials" id="socials"></div></div>
+    <div class="card"><img class="logo" src="logo.png" alt="Ray FM logo"><h2>About Ray FM</h2><p id="about"></p></div>
+    <button class="act line hide" id="install">Install Ray FM on this phone</button>
+    <p class="hint hide" id="ios">On iPhone: tap Share, then Add to Home Screen.</p>
+  </section>
+</div>
 
-  <div class="vol"><span>Volume</span><input id="vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume"></div>
-  <div class="status" id="status"></div>
-</main>
-
-<footer>
-  <button class="ghost hide" id="install">Install Ray FM on this phone</button>
-  <span id="ios" class="hide">On iPhone: tap Share, then Add to Home Screen.</span>
-</footer>
+<nav role="tablist">
+  <button role="tab" aria-selected="true" data-v="listen"><svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 4V6L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>Listen</button>
+  <button role="tab" aria-selected="false" data-v="recent"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 5h-2v6l5 3 1-1.6-4-2.4V7z"/></svg>Recent</button>
+  <button role="tab" aria-selected="false" data-v="more"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg>More</button>
+</nav>
+</div>
 
 <script>
-// ---- Edit these two lines if your address ever changes ----
-const BASE = "https://prince.tail2e7667.ts.net";
+/* ===== EDIT THIS SECTION ===== */
+const BASE = "https://prince.tail2e7667.ts.net";   // your Funnel address
 const STATION = "ray_fm";
-// -----------------------------------------------------------
+const TAGLINE = "Tune In. Feel Good.";
+const DEFAULT_ART = "default-art.jpg";   // shown when a song has no cover art
+const WELCOME_SOUND = "welcome.mp3";   // jingle played when someone first presses play (replace this file with your own recording if you like)
+const WELCOME_VOICE = true;            // speaks "Welcome to Ray FM" over the jingle. Set to false if your own welcome.mp3 already has a voice.
+const WHATSAPP = "";   // your number, digits only with country code, e.g. "2567XXXXXXXX". Leave "" to hide the buttons.
+const SOCIALS = { Instagram:"", Facebook:"", TikTok:"", YouTube:"" };   // paste full links; empty ones are hidden
+const ABOUT = "Music, news, talk and entertainment, with local songs from local artists, played with their permission. Listen free, share with friends, and send us your requests.";
+/* ============================== */
+
 const STREAM = BASE + "/listen/" + STATION + "/radio.mp3";
 const API = BASE + "/api/nowplaying/" + STATION;
 const $ = id => document.getElementById(id);
-const PLAY = '<path d="M8 5v14l11-7z"/>';
-const PAUSE_ICON = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
-let audio = null, timer = null;
+const PLAY = '<path d="M8 5v14l11-7z"/>', PAUSE = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+let audio = null, wantPlay = false, retries = 0, sleepT = null, rt = null, phase = "stream", welcomed = false;
+const st = { song:null, online:true, playing:false };
 
-// draw dial ticks
-(function(){let h="";for(let i=0;i<=40;i++){const x=i*2.5,big=i%5===0;
- h+=`<line x1="${x}" x2="${x}" y1="${big?38:50}" y2="74" stroke="${big?'#ffc233':'#8a62ad'}" stroke-width="${big?.7:.4}" vector-effect="non-scaling-stroke"/>`;}
- $("ticks").innerHTML=h;})();
+$("tag").textContent = TAGLINE; $("about").textContent = ABOUT;
+(function(){ let h=""; for(let i=0;i<=40;i++){ const x=i*2.5, big=i%5===0;
+  h+=`<line x1="${x}" x2="${x}" y1="${big?26:36}" y2="56" stroke="${big?'#9fd8ff':'#5d86d6'}" stroke-width="${big?.7:.4}" vector-effect="non-scaling-stroke"/>`; }
+  $("ticks").innerHTML=h; })();
 
-function setIcon(on){ $("ico").innerHTML = on ? PAUSE_ICON : PLAY;
-  $("play").setAttribute("aria-label", on ? "Pause Ray FM" : "Play Ray FM");
+/* WhatsApp buttons, socials */
+const wa = m => "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(m);
+if(WHATSAPP){
+  $("req").classList.remove("hide"); $("artist-cta").classList.remove("hide");
+  $("req").href = wa("Hi Ray FM! Please play: ");
+  $("artist-cta").href = wa("Hi Ray FM, I'm an artist and I'd like my music played on the station. My name, song and a link: ");
+}
+const soc = Object.entries(SOCIALS).filter(e => e[1]);
+if(soc.length){ $("socialcard").classList.remove("hide");
+  soc.forEach(([n,u]) => { const a=document.createElement("a"); a.href=u; a.textContent=n; a.target="_blank"; a.rel="noopener"; $("socials").appendChild(a); }); }
+
+/* Render current state */
+function render(){
+  const on = st.playing;
   document.body.classList.toggle("live", on);
-  $("led").textContent = on ? "On air" : "Off air";
-  $("label").textContent = on ? "Now playing" : "Ready when you are";
-  if(!on){ $("title").textContent = "Tap the speaker to listen"; $("artist").textContent = ""; } }
+  $("ico").innerHTML = on ? PAUSE : PLAY;
+  $("play").setAttribute("aria-label", on ? "Pause Ray FM" : "Play Ray FM");
+  $("led").textContent = on ? "On air" : (st.online ? "Ready" : "Off air");
+  const s = st.song;
+  if(!st.online){ $("label").textContent="Off air"; $("title").textContent="Ray FM is off air right now"; $("artist").textContent="Please check back soon"; $("art").src=DEFAULT_ART; $("art").style.visibility="visible"; return; }
+  $("label").textContent = on ? "Now playing" : "On air now";
+  $("title").textContent = s ? (s.title || "Ray FM") : "Tuning in…";
+  $("artist").textContent = s ? (s.artist || "") : "";
+  $("art").src = artOf(s); $("art").style.visibility="visible";
+}
+const artOf = s => (s && s.art && !/generic_song/.test(s.art)) ? s.art : DEFAULT_ART;
+$("art").onerror = () => { if(!$("art").src.endsWith(DEFAULT_ART)) $("art").src = DEFAULT_ART; };
 
+const ago = t => { const m = Math.round((Date.now()/1000 - t)/60); return m<1 ? "just now" : m<60 ? m+" min ago" : Math.round(m/60)+" h ago"; };
+
+/* Poll station info */
 async function refresh(){
   try{
-    const r = await fetch(API, {cache:"no-store"}); const d = await r.json();
-    const s = d.now_playing && d.now_playing.song;
-    if(s && audio){ $("title").textContent = s.title || "Ray FM"; $("artist").textContent = s.artist || "";
-      if("mediaSession" in navigator) navigator.mediaSession.metadata =
-        new MediaMetadata({title:s.title||"Ray FM", artist:s.artist||"Ray FM", album:"Ray FM"}); }
-  }catch(e){}
+    const d = await (await fetch(API, {cache:"no-store"})).json();
+    st.online = d.is_online !== false;
+    st.song = d.now_playing && d.now_playing.song;
+    const l = d.listeners && d.listeners.current;
+    $("lis").textContent = (typeof l==="number" && l>0) ? l + (l===1?" listening":" listening") : "";
+    const ms = (d.station && d.station.mounts) || [];
+    const m = ms.find(x => x.is_default) || ms[0];
+    $("data").textContent = (m && m.bitrate) ? "Uses about " + Math.round(m.bitrate*0.45) + " MB of data per hour." : "";
+    const h = $("hist"); h.innerHTML = "";
+    (d.song_history || []).slice(0,10).forEach(it => {
+      const r=document.createElement("div"); r.className="row";
+      const im=document.createElement("img"); im.className="art"; im.alt=""; im.loading="lazy"; im.width=44; im.height=44;
+      im.onerror=()=>{ im.onerror=null; im.src=DEFAULT_ART; }; im.src=artOf(it.song);
+      const t=document.createElement("div"), b=document.createElement("b"), sp=document.createElement("span");
+      b.textContent=(it.song&&it.song.title)||"Unknown"; sp.textContent=(it.song&&it.song.artist)||"";
+      t.append(b,sp); const tm=document.createElement("time"); tm.textContent=ago(it.played_at);
+      r.append(im,t,tm); h.appendChild(r);
+    });
+    if(!h.children.length) h.innerHTML="<p>Songs will appear here as they play.</p>";
+    if(st.playing && st.song && "mediaSession" in navigator)
+      navigator.mediaSession.metadata = new MediaMetadata({title:st.song.title||"Ray FM", artist:st.song.artist||"Ray FM", album:"Ray FM", artwork: [{src:new URL(artOf(st.song),location.href).href}]});
+  }catch(e){ st.online = false; }
+  render();
 }
+refresh(); setInterval(refresh, 15000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) refresh(); });
 
-function start(){
-  audio = new Audio(STREAM + "?t=" + Date.now()); audio.volume = $("vol").value;
-  $("status").textContent = "Tuning in…";
-  audio.addEventListener("playing", () => { $("status").textContent = ""; setIcon(true); });
-  audio.addEventListener("waiting", () => $("status").textContent = "Buffering…");
-  audio.addEventListener("error", () => { stop(); $("status").textContent = "Can't reach Ray FM. Check your connection and tap the speaker again."; });
-  audio.play().catch(() => { stop(); $("status").textContent = "Tap the speaker again to start."; });
-  refresh(); timer = setInterval(refresh, 15000);
+/* Playback with auto-reconnect */
+function build(welcome){
+  if(audio){ audio.onerror = audio.onended = null; audio.pause(); audio.src = ""; }
+  phase = welcome ? "welcome" : "stream";
+  const a = audio = new Audio(welcome ? WELCOME_SOUND : STREAM + "?t=" + Date.now()); a.volume = $("vol").value;
+  const fail = () => { if(a === audio){ stop(); $("status").textContent = "Tap the speaker again to start."; } };
+  const toStream = () => { phase = "stream"; a.src = STREAM + "?t=" + Date.now(); a.play().catch(fail); };
+  a.onplaying = () => { retries = 0; $("status").textContent = ""; st.playing = true; render(); };
+  a.onwaiting = () => { if(phase === "stream") $("status").textContent = "Buffering…"; };
+  a.onerror = a.onended = () => { if(a !== audio) return; phase === "welcome" ? toStream() : reconnect(); };
+  a.play().catch(fail);
 }
-function stop(){ if(audio){ audio.pause(); audio.src = ""; audio = null; } clearInterval(timer);
-  $("status").textContent = ""; setIcon(false); }
-
-$("play").onclick = () => audio ? stop() : start();
+function reconnect(){
+  if(!wantPlay) return;
+  if(retries++ < 6){ $("status").textContent = "Reconnecting…"; clearTimeout(rt); rt = setTimeout(() => { if(wantPlay) build(); }, 3000); }
+  else { stop(); $("status").textContent = "Can't reach Ray FM. Check your connection, then tap the speaker."; }
+}
+const welcomeOn = () => $("wel").checked;
+function speak(){ try{ if(!("speechSynthesis" in window)) return; speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance("Welcome to Ray FM"); u.rate = .95; u.pitch = 1.05; speechSynthesis.speak(u); }catch(e){} }
+function start(){ wantPlay = true; retries = 0; $("status").textContent = "Tuning in…";
+  const w = welcomeOn() && !welcomed; welcomed = true;
+  if(w && WELCOME_VOICE) speak();
+  build(w); }
+function stop(){ try{ speechSynthesis.cancel(); }catch(e){} wantPlay = false; clearTimeout(rt); if(audio){ audio.onerror = audio.onended = null; audio.pause(); audio.src = ""; audio = null; }
+  st.playing = false; $("status").textContent = ""; render(); }
+$("play").onclick = () => wantPlay ? stop() : start();
 $("vol").oninput = e => { if(audio) audio.volume = e.target.value; };
 if("mediaSession" in navigator){
-  navigator.mediaSession.setActionHandler("play", () => { if(!audio) start(); });
+  navigator.mediaSession.setActionHandler("play", () => { if(!wantPlay) start(); });
   navigator.mediaSession.setActionHandler("pause", stop);
 }
 
+/* Sleep timer */
+$("sleep").onchange = e => {
+  clearTimeout(sleepT); const m = +e.target.value; $("sleepnote").textContent = "";
+  if(m > 0){ $("sleepnote").textContent = "Ray FM will stop in " + m + " minutes.";
+    sleepT = setTimeout(() => { stop(); $("sleep").value = "0"; $("sleepnote").textContent = "Sleep timer finished. Goodnight!"; }, m*60000); }
+};
+
+try{ $("wel").checked = localStorage.getItem("rayfm_welcome") !== "0"; }catch(e){}
+$("wel").onchange = () => { try{ localStorage.setItem("rayfm_welcome", $("wel").checked ? "1" : "0"); }catch(e){} };
+
+/* Share */
+$("share").onclick = async () => {
+  const url = location.href.split("#")[0], text = "Listen to Ray FM: " + TAGLINE;
+  if(navigator.share){ try{ await navigator.share({title:"Ray FM", text, url}); }catch(e){} }
+  else window.open("https://wa.me/?text=" + encodeURIComponent(text + " " + url), "_blank");
+};
+
+/* Tabs */
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.setAttribute("aria-selected", x===b));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + b.dataset.v));
+  document.querySelector(".views").scrollTop = 0;
+});
+
+/* Install */
 let deferred;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; $("install").classList.remove("hide"); });
 $("install").onclick = async () => { if(!deferred) return; deferred.prompt(); await deferred.userChoice; deferred = null; $("install").classList.add("hide"); };
