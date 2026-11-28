@@ -90,12 +90,17 @@ input[type=search]{width:100%;margin-top:10px;padding:11px 12px;border-radius:10
 .rbtn[disabled]{opacity:.55;cursor:default}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(78px + env(safe-area-inset-bottom));background:#fff;color:var(--plum);padding:10px 16px;border-radius:12px;font-weight:700;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:5}
 .toast.on{opacity:1}
-.clock{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(4,22,74,.6);border:1px solid var(--line);border-radius:14px;padding:10px 16px}
-.clock .t{font-size:2rem;font-weight:800;color:var(--ivory);font-variant-numeric:tabular-nums;line-height:1}
+.clock{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 4px}
+.clock .t{font-size:1.7rem;font-weight:800;color:var(--ivory);font-variant-numeric:tabular-nums;line-height:1}
 .clock .d{font-size:.78rem;color:var(--mute);margin-top:5px}
 .clock .r{text-align:right}
 .clock .r b{display:block;color:var(--gold);font-size:.95rem}
 .clock .r span{color:var(--mute);font-size:.8rem}
+.tag{display:none}
+.status{min-height:0}
+.view{gap:22px}
+#play{margin:10px 0}
+@media(max-height:740px){.hero{display:none}}
 .hide{display:none!important}
 @media(max-height:680px){.hero{display:none}h1{font-size:1.7rem}#play{width:min(36vw,140px)}.view{gap:10px}}
 @media(prefers-reduced-motion:reduce){.live #play,.live .eq b{animation:none}.live .eq b{height:12px}.needle{transition:none}}
@@ -112,18 +117,13 @@ input[type=search]{width:100%;margin-top:10px;padding:11px 12px;border-radius:10
   <section class="view on" id="v-listen">
     <img class="hero" src="banner.jpg" alt="Ray FM: Tune In. Feel Good. Listen Live" width="1400" height="521">
     <div class="clock"><div><div class="t" id="ctime">--:--</div><div class="d" id="cdate"></div></div><div class="r"><b id="chello"></b><span id="cshow"></span></div></div>
-    <div class="dial" aria-hidden="true">
-      <div class="scale"><svg class="ticks" id="ticks" preserveAspectRatio="none" viewBox="0 0 100 56"></svg><div class="needle"></div></div>
-      <div class="dial-foot"><span class="led"><i></i><span id="led">Ready</span></span><span class="eq"><b></b><b></b><b></b><b></b><b></b></span></div>
-    </div>
     <button id="play" aria-label="Play Ray FM"><span class="core"><svg viewBox="0 0 24 24" id="ico"><path d="M8 5v14l11-7z"/></svg></span></button>
     <div class="card np" aria-live="polite">
       <img class="art" id="art" src="default-art.jpg" alt="" width="56" height="56">
-      <div><small id="label">On air now</small><b id="title">Loading…</b><span id="artist"></span></div>
+      <div style="min-width:0"><small id="label">On air now</small><b id="title">Loading…</b><span id="artist"></span></div>
+      <span class="eq" aria-hidden="true" style="margin-left:auto"><b></b><b></b><b></b><b></b><b></b></span>
     </div>
-    <div class="vol"><span>Volume</span><input id="vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume"></div>
     <div class="status" id="status" role="status"></div>
-    <div class="hint" id="data"></div>
   </section>
 
   <section class="view" id="v-recent">
@@ -148,12 +148,14 @@ input[type=search]{width:100%;margin-top:10px;padding:11px 12px;border-radius:10
     <button class="act" id="share">Share Ray FM with friends</button>
     <a class="act alt hide" id="req" target="_blank" rel="noopener">Request a song</a>
     <a class="act line hide" id="artist-cta" target="_blank" rel="noopener">I'm an artist: play my music</a>
+    <div class="card"><h2>Volume</h2><input id="vol" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" style="width:100%;margin-top:8px"></div>
     <div class="card"><h2>Sleep timer</h2>
       <select id="sleep" aria-label="Sleep timer"><option value="0">Off</option><option value="15">Stop in 15 minutes</option><option value="30">Stop in 30 minutes</option><option value="60">Stop in 1 hour</option><option value="120">Stop in 2 hours</option></select>
       <p id="sleepnote" style="margin-top:8px"></p></div>
     <label class="card" style="display:flex;gap:12px;align-items:center;cursor:pointer"><input type="checkbox" id="wel" checked style="width:20px;height:20px;accent-color:var(--gold)"><span>Play the Ray FM welcome sound when I start listening</span></label>
     <div class="card hide" id="socialcard"><h2>Follow us</h2><div class="socials" id="socials"></div></div>
     <div class="card"><img class="logo" src="logo.png" alt="Ray FM logo"><h2>About Ray FM</h2><p id="about"></p></div>
+    <p class="hint" id="data"></p>
     <button class="act line hide" id="install">Install Ray FM on this phone</button>
     <p class="hint hide" id="ios">On iPhone: tap Share, then Add to Home Screen.</p>
   </section>
@@ -199,9 +201,7 @@ let audio = null, wantPlay = false, retries = 0, sleepT = null, rt = null, phase
 const st = { song:null, online:true, playing:false };
 
 $("tag").textContent = TAGLINE; $("about").textContent = ABOUT;
-(function(){ let h=""; for(let i=0;i<=40;i++){ const x=i*2.5, big=i%5===0;
-  h+=`<line x1="${x}" x2="${x}" y1="${big?26:36}" y2="56" stroke="${big?'#9fd8ff':'#5d86d6'}" stroke-width="${big?.7:.4}" vector-effect="non-scaling-stroke"/>`; }
-  $("ticks").innerHTML=h; })();
+
 
 /* WhatsApp buttons, socials */
 const wa = m => "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(m);
@@ -227,7 +227,7 @@ function tick(){
     date = now.toLocaleDateString([], {weekday:"long", day:"numeric", month:"long"}); h = now.getHours();
   }
   const sh = SHOWS.find(x => x.from < x.to ? (h >= x.from && h < x.to) : (h >= x.from || h < x.to)) || SHOWS[0];
-  $("ctime").textContent = time; $("cdate").textContent = date + " · " + TIMEZONE_LABEL;
+  $("ctime").textContent = time; $("cdate").textContent = TIMEZONE_LABEL;
   $("chello").textContent = sh.hello; $("cshow").textContent = sh.name;
 }
 tick(); setInterval(tick, 15000);
@@ -239,7 +239,6 @@ function render(){
   document.body.classList.toggle("live", on);
   $("ico").innerHTML = on ? PAUSE : PLAY;
   $("play").setAttribute("aria-label", on ? "Pause Ray FM" : "Play Ray FM");
-  $("led").textContent = on ? "On air" : (st.online ? "Ready" : "Off air");
   const s = st.song;
   if(!st.online){ $("label").textContent="Off air"; $("title").textContent="Ray FM is off air right now"; $("artist").textContent="Please check back soon"; $("art").src=DEFAULT_ART; $("art").style.visibility="visible"; return; }
   $("label").textContent = on ? "Now playing" : "On air now";
