@@ -84,6 +84,18 @@ select{width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px soli
 .brand{display:flex;gap:10px;align-items:center}.mark{width:44px;height:44px;border-radius:12px;box-shadow:0 2px 10px #0006}
 .hero{width:100%;height:auto;border-radius:14px;border:1px solid var(--line);box-shadow:0 8px 24px #0006}
 .logo{display:block;width:100%;height:auto;background:#fff;border-radius:10px;padding:8px;margin-bottom:12px}
+input[type=search]{width:100%;margin-top:10px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:#04164a;color:var(--ivory);font:inherit}
+#rbox input[type=text],#rbox textarea{width:100%;margin-top:8px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:#04164a;color:var(--ivory);font:inherit;resize:vertical}
+.rbtn{margin-left:auto;flex:none;background:var(--gold);color:var(--plum);border:0;border-radius:999px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer}
+.rbtn[disabled]{opacity:.55;cursor:default}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(78px + env(safe-area-inset-bottom));background:#fff;color:var(--plum);padding:10px 16px;border-radius:12px;font-weight:700;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:5}
+.toast.on{opacity:1}
+.clock{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(4,22,74,.6);border:1px solid var(--line);border-radius:14px;padding:10px 16px}
+.clock .t{font-size:2rem;font-weight:800;color:var(--ivory);font-variant-numeric:tabular-nums;line-height:1}
+.clock .d{font-size:.78rem;color:var(--mute);margin-top:5px}
+.clock .r{text-align:right}
+.clock .r b{display:block;color:var(--gold);font-size:.95rem}
+.clock .r span{color:var(--mute);font-size:.8rem}
 .hide{display:none!important}
 @media(max-height:680px){.hero{display:none}h1{font-size:1.7rem}#play{width:min(36vw,140px)}.view{gap:10px}}
 @media(prefers-reduced-motion:reduce){.live #play,.live .eq b{animation:none}.live .eq b{height:12px}.needle{transition:none}}
@@ -99,6 +111,7 @@ select{width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px soli
 <div class="views">
   <section class="view on" id="v-listen">
     <img class="hero" src="banner.jpg" alt="Ray FM: Tune In. Feel Good. Listen Live" width="1400" height="521">
+    <div class="clock"><div><div class="t" id="ctime">--:--</div><div class="d" id="cdate"></div></div><div class="r"><b id="chello"></b><span id="cshow"></span></div></div>
     <div class="dial" aria-hidden="true">
       <div class="scale"><svg class="ticks" id="ticks" preserveAspectRatio="none" viewBox="0 0 100 56"></svg><div class="needle"></div></div>
       <div class="dial-foot"><span class="led"><i></i><span id="led">Ready</span></span><span class="eq"><b></b><b></b><b></b><b></b><b></b></span></div>
@@ -117,6 +130,20 @@ select{width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px soli
     <div class="card"><h2>Recently played</h2><div id="hist"><p>Songs will appear here as they play.</p></div></div>
   </section>
 
+  <section class="view" id="v-request">
+    <div class="card"><h2>Request a song</h2><p>Pick a song and we'll play it soon.</p>
+      <input id="q" type="search" placeholder="Search songs or artists" aria-label="Search songs"></div>
+    <div class="card" style="padding-top:4px;padding-bottom:4px"><div id="songs"><p style="padding:10px 0">Loading songs…</p></div></div>
+    <div class="card hide" id="rbox"><h2>Song not in the list?</h2><p>Tell us what you want to hear and we'll try to play it.</p>
+      <input id="rt" type="text" maxlength="100" placeholder="Song title" aria-label="Song title">
+      <input id="ra" type="text" maxlength="100" placeholder="Artist" aria-label="Artist">
+      <input id="rn" type="text" maxlength="60" placeholder="Your name (optional)" aria-label="Your name">
+      <textarea id="rm" maxlength="300" rows="2" placeholder="Shout-out or message (optional)" aria-label="Message"></textarea>
+      <input id="rh" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+      <button class="act" id="rsend" style="margin-top:12px">Send request</button></div>
+    <a class="act line hide" id="req2" target="_blank" rel="noopener">Can't find it? Ask us on WhatsApp</a>
+  </section>
+
   <section class="view" id="v-more">
     <button class="act" id="share">Share Ray FM with friends</button>
     <a class="act alt hide" id="req" target="_blank" rel="noopener">Request a song</a>
@@ -132,9 +159,11 @@ select{width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px soli
   </section>
 </div>
 
+<div class="toast" id="toast" role="status"></div>
 <nav role="tablist">
   <button role="tab" aria-selected="true" data-v="listen"><svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 4V6L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>Listen</button>
   <button role="tab" aria-selected="false" data-v="recent"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 5h-2v6l5 3 1-1.6-4-2.4V7z"/></svg>Recent</button>
+  <button role="tab" aria-selected="false" data-v="request"><svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>Request</button>
   <button role="tab" aria-selected="false" data-v="more"><svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z"/></svg>More</button>
 </nav>
 </div>
@@ -144,10 +173,20 @@ select{width:100%;margin-top:8px;padding:10px;border-radius:10px;border:1px soli
 const BASE = "https://prince.tail2e7667.ts.net";   // your Funnel address
 const STATION = "ray_fm";
 const TAGLINE = "Tune In. Feel Good.";
+const TIMEZONE = "Africa/Kampala";     // the clock always shows this time zone
+const TIMEZONE_LABEL = "Uganda time";
+// Names shown on the clock by hour (24-hour clock). These are display labels only.
+const SHOWS = [
+  {from:5,  to:10, name:"Ray FM Morning",    hello:"Good morning"},
+  {from:10, to:17, name:"Ray FM Midday",     hello:"Good afternoon"},
+  {from:17, to:21, name:"Ray FM Evening",    hello:"Good evening"},
+  {from:21, to:5,  name:"Ray FM Night Vibes", hello:"Good night"}
+];
 const DEFAULT_ART = "default-art.jpg";   // shown when a song has no cover art
 const WELCOME_SOUND = "welcome.mp3";   // jingle played when someone first presses play (replace this file with your own recording if you like)
 const WELCOME_VOICE = true;            // speaks "Welcome to Ray FM" over the jingle. Set to false if your own welcome.mp3 already has a voice.
-const WHATSAPP = "";   // your number, digits only with country code, e.g. "2567XXXXXXXX". Leave "" to hide the buttons.
+const REQUEST_KEY = "";   // free access key from web3forms.com (see instructions). Requests typed in the app are emailed to you. Leave "" to hide the form.
+const WHATSAPP = "256783616934";   // your number, digits only with country code, e.g. "2567XXXXXXXX". Leave "" to hide the buttons.
 const SOCIALS = { Instagram:"", Facebook:"", TikTok:"", YouTube:"" };   // paste full links; empty ones are hidden
 const ABOUT = "Music, news, talk and entertainment, with local songs from local artists, played with their permission. Listen free, share with friends, and send us your requests.";
 /* ============================== */
@@ -169,11 +208,30 @@ const wa = m => "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(m);
 if(WHATSAPP){
   $("req").classList.remove("hide"); $("artist-cta").classList.remove("hide");
   $("req").href = wa("Hi Ray FM! Please play: ");
+  $("req2").classList.remove("hide"); $("req2").href = wa("Hi Ray FM! Please play: ");
   $("artist-cta").href = wa("Hi Ray FM, I'm an artist and I'd like my music played on the station. My name, song and a link: ");
 }
 const soc = Object.entries(SOCIALS).filter(e => e[1]);
 if(soc.length){ $("socialcard").classList.remove("hide");
   soc.forEach(([n,u]) => { const a=document.createElement("a"); a.href=u; a.textContent=n; a.target="_blank"; a.rel="noopener"; $("socials").appendChild(a); }); }
+
+/* Clock and show name */
+function tick(){
+  const now = new Date(); let time, date, h;
+  try{
+    time = now.toLocaleTimeString("en-US", {timeZone:TIMEZONE, hour:"numeric", minute:"2-digit"});
+    date = now.toLocaleDateString("en-GB", {timeZone:TIMEZONE, weekday:"long", day:"numeric", month:"long"});
+    h = +new Intl.DateTimeFormat("en-GB", {timeZone:TIMEZONE, hour:"numeric", hourCycle:"h23"}).format(now);
+  }catch(e){
+    time = now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+    date = now.toLocaleDateString([], {weekday:"long", day:"numeric", month:"long"}); h = now.getHours();
+  }
+  const sh = SHOWS.find(x => x.from < x.to ? (h >= x.from && h < x.to) : (h >= x.from || h < x.to)) || SHOWS[0];
+  $("ctime").textContent = time; $("cdate").textContent = date + " · " + TIMEZONE_LABEL;
+  $("chello").textContent = sh.hello; $("cshow").textContent = sh.name;
+}
+tick(); setInterval(tick, 15000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) tick(); });
 
 /* Render current state */
 function render(){
@@ -274,11 +332,74 @@ $("share").onclick = async () => {
   else window.open("https://wa.me/?text=" + encodeURIComponent(text + " " + url), "_blank");
 };
 
+/* Song requests (uses AzuraCast's built-in request feature) */
+const REQ_API = BASE + "/api/station/" + STATION + "/requests?per_page=1000&rowCount=1000";
+let songs = null, loadingSongs = false;
+function toast(m){ const t = $("toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 4000); }
+async function loadSongs(){
+  loadingSongs = true;
+  try{ const r = await fetch(REQ_API, {cache:"no-store"}); if(!r.ok) throw 0; const d = await r.json();
+    songs = (Array.isArray(d) ? d : (d.rows || [])).filter(x => x && x.song && x.request_url);
+  }catch(e){ songs = false; }
+  loadingSongs = false; drawSongs();
+}
+function drawSongs(){
+  const box = $("songs"); box.innerHTML = "";
+  const msg = t => { const p = document.createElement("p"); p.style.padding = "10px 0"; p.textContent = t; box.appendChild(p); };
+  if(songs === false) return msg("Song requests aren't available right now. Please try again later, or ask us on WhatsApp.");
+  if(!songs) return msg("Loading songs…");
+  if(!songs.length) return msg("No songs can be requested yet.");
+  const q = $("q").value.trim().toLowerCase();
+  const list = songs.filter(x => !q || ((x.song.title||"") + " " + (x.song.artist||"")).toLowerCase().includes(q)).slice(0, 50);
+  if(!list.length) return msg("No match. Ask us on WhatsApp and we'll try to add it.");
+  list.forEach(x => {
+    const r = document.createElement("div"); r.className = "row";
+    const im = document.createElement("img"); im.className = "art"; im.alt = ""; im.loading = "lazy"; im.width = 44; im.height = 44;
+    im.onerror = () => { im.onerror = null; im.src = DEFAULT_ART; }; im.src = artOf(x.song);
+    const t = document.createElement("div"), b = document.createElement("b"), sp = document.createElement("span");
+    b.textContent = x.song.title || "Unknown"; sp.textContent = x.song.artist || ""; t.append(b, sp);
+    const btn = document.createElement("button"); btn.className = "rbtn"; btn.textContent = "Request";
+    btn.onclick = () => doRequest(x, btn);
+    r.append(im, t, btn); box.appendChild(r);
+  });
+}
+async function doRequest(x, btn){
+  btn.disabled = true;
+  try{
+    const r = await fetch(x.request_url, {method:"POST"}); let d = {}; try{ d = await r.json(); }catch(e){}
+    const ok = r.ok && d.success !== false;
+    toast(d.message || (ok ? "Request sent! We'll play it soon." : "Couldn't send the request. Please try again later."));
+    if(ok) btn.textContent = "Requested"; else btn.disabled = false;
+  }catch(e){ toast("No connection. Please try again."); btn.disabled = false; }
+}
+$("q").oninput = drawSongs;
+
+/* Free-text requests sent from inside the app (emailed to the station via web3forms.com) */
+if(REQUEST_KEY) $("rbox").classList.remove("hide");
+$("rsend").onclick = async () => {
+  const t = $("rt").value.trim(), a = $("ra").value.trim(), n = $("rn").value.trim(), m = $("rm").value.trim();
+  if(!t){ toast("Please type the song title."); return; }
+  if($("rh").value){ toast("Request sent! Thank you."); return; }
+  let last = 0; try{ last = +localStorage.getItem("rayfm_lastreq") || 0; }catch(e){}
+  if(Date.now() - last < 60000){ toast("Please wait a minute before sending another request."); return; }
+  const btn = $("rsend"); btn.disabled = true; btn.textContent = "Sending…";
+  try{
+    const r = await fetch("https://api.web3forms.com/submit", {method:"POST", headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body: JSON.stringify({access_key:REQUEST_KEY, subject:"Ray FM song request: " + t, from_name:"Ray FM App", name:n || "Listener",
+        message:"Song: " + t + "\nArtist: " + (a || "-") + "\nFrom: " + (n || "-") + "\nMessage: " + (m || "-")})});
+    const d = await r.json();
+    if(d.success){ toast("Request sent! Thank you."); ["rt","ra","rn","rm"].forEach(i => $(i).value = ""); try{ localStorage.setItem("rayfm_lastreq", Date.now()); }catch(e){} }
+    else toast("Couldn't send. Please try again.");
+  }catch(e){ toast("No connection. Please try again."); }
+  btn.disabled = false; btn.textContent = "Send request";
+};
+
 /* Tabs */
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
   document.querySelectorAll("nav button").forEach(x => x.setAttribute("aria-selected", x===b));
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + b.dataset.v));
   document.querySelector(".views").scrollTop = 0;
+  if(b.dataset.v === "request" && !songs && !loadingSongs){ drawSongs(); loadSongs(); }
 });
 
 /* Install */
